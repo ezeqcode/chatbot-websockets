@@ -3,7 +3,7 @@ import { ChatbotsService } from './chatbots.service';
 import { Server, Socket } from 'socket.io';
 import { GetQrCodeDto } from './dto/get-qrcode-dto';
 
-@WebSocketGateway(3070, {
+@WebSocketGateway(8448, {
   cors: {
     origin: '*',
   },
