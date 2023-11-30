@@ -11,12 +11,9 @@ export class ChatbotsService {
 
   constructor(
     private venomBotsService: VenombotsService,
-    private connectedClients = new Map(),
-  ) { }
-
-
-
-
+    ) { }
+    
+    private connectedClients = new Map();
 
   async getQrCode(getQrCodeDto: GetQrCodeDto) {
     const { sessionName, socket } = getQrCodeDto;
