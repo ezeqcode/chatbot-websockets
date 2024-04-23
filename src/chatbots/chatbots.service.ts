@@ -8,27 +8,44 @@ import { uuid } from 'uuidv4';
 
 @Injectable()
 export class ChatbotsService {
+  constructor(private venomBotsService: VenombotsService) {}
 
-  constructor(
-    private venomBotsService: VenombotsService,
-    ) { }
-    
-    private connectedClients = new Map();
+  private connectedClients = new Map();
+
+  start(client) {
+    client.onMessage((message) => {
+      if (
+        message.from === '559888740369@c.us' &&
+        message.isGroupMsg === false
+      ) {
+        console.log(message);
+        client.sendText(message.from, message.body);
+      }
+    });
+  }
 
   async getQrCode(getQrCodeDto: GetQrCodeDto) {
     const { sessionName, socket } = getQrCodeDto;
     const clientId = uuid();
 
     try {
-      const client = await this.venomBotsService.createNewClient({ sessionName, socket });
+      const client = await this.venomBotsService.createNewClient({
+        sessionName,
+        socket,
+      });
       if (client) {
+        this.start(client);
+        const qrCode = await client.getQrCode();
+        socket.emit('qrCode', {
+          qrCode,
+          clientId: client.session,
+        });
         this.connectedClients.set(clientId, { socket, session: client });
       }
     } catch (error) {
-      console.error(error, "Tive erro");
-      socket.emit(`errorQrCode-${sessionName}`, "Erro ao gerar o QR Code");
+      console.error(error, 'Tive erro');
+      socket.emit(`errorQrCode-${sessionName}`, 'Erro ao gerar o QR Code');
     }
-
   }
 
   create(createChatbotDto: CreateChatbotDto) {
