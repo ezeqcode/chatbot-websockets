@@ -3,7 +3,6 @@ import { CreateChatbotDto } from './dto/create-chatbot.dto';
 import { UpdateChatbotDto } from './dto/update-chatbot.dto';
 import { VenombotsService } from 'src/venombots/venombots.service';
 import { GetQrCodeDto } from './dto/get-qrcode-dto';
-import { Socket } from 'socket.io';
 import { uuid } from 'uuidv4';
 
 @Injectable()
@@ -12,7 +11,7 @@ export class ChatbotsService {
 
   private connectedClients = new Map();
 
-  start(client) {
+  start(client, socket) {
     client.onMessage((message) => {
       if (
         message.from === '559888740369@c.us' &&
@@ -20,6 +19,7 @@ export class ChatbotsService {
       ) {
         console.log(message);
         client.sendText(message.from, message.body);
+        socket.emit('venom-message', message.body);
       }
     });
   }
@@ -34,7 +34,7 @@ export class ChatbotsService {
         socket,
       });
       if (client) {
-        this.start(client);
+        this.start(client, socket);
         const qrCode = await client.getQrCode();
         socket.emit('qrCode', {
           qrCode,
