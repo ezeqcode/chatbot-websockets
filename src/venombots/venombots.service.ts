@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateVenombotDto } from './dto/create-venombot.dto';
 import { UpdateVenombotDto } from './dto/update-venombot.dto';
-import { create, Whatsapp } from 'venom-bot';
+import { create } from 'venom-bot';
+import { resolve } from 'path';
+import deleteDirR from 'src/utils/removeDir';
 
 @Injectable()
 export class VenombotsService {
@@ -9,6 +11,8 @@ export class VenombotsService {
     const { sessionName, socket } = createVenombotDto;
     // console.log(createVenombotDto);
     try {
+      const path = resolve('tokens');
+      deleteDirR(`${path}/${sessionName}`, () => {});
       const client = await create(
         { session: sessionName } as any,
         (base64Qrimg, asciiQR, attempts, urlCode) => {
@@ -38,7 +42,7 @@ export class VenombotsService {
               console.log(
                 `Sessão ${sessionName} fechada devido a falhas na leitura do QR code`,
               );
-              socket.emit(`qrCodeFail-${sessionName}`, 'Sessão finalizada!');
+              socket.emit(`autocloseCalled`, { sessionId: sessionName });
               break;
           }
           socket.emit(`${statusSession}-${sessionName}`, statusSession);
@@ -51,7 +55,7 @@ export class VenombotsService {
           debug: false,
           logQR: true,
           disableSpins: true,
-          disableWelcome: true,
+          disableWelcome: false,
           updatesLog: true,
           autoClose: 15000,
           createPathFileToken: true,
